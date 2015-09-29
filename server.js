@@ -7,8 +7,7 @@ var bodyParser = require('body-parser');
 // Mongo DB
 var mongo = require('mongodb');
 var monk = require('monk');
-//var db = monk('localhost:27017/testDB');
-var db = monk('ec2-54-148-250-227.us-west-2.compute.amazonaws.com:27017/testDB');
+var db = monk('localhost:27017/spotDB');
 
 //var routes = require('./controllers/index');
 var spots = require('./controllers/spot');
