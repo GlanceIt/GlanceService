@@ -9,7 +9,7 @@ var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk('localhost:27017/spotDB');
 
-//var routes = require('./controllers/index');
+var ratings = require('./controllers/rating');
 var spots = require('./controllers/spot');
 
 var app = express();
@@ -29,7 +29,7 @@ app.use(function(req,res,next){
     next();
 });
 
-//app.use('/', routes);
+app.use('/', ratings);
 app.use('/', spots);
 
 // catch 404 and forward to error handler
