@@ -37,10 +37,10 @@ function getNearbySpots(collection, center, res) {
         ],
         {}, function(err, docs){
         if (err) {
-        console.log('Could not get nearby spots');
-        res.json({ message: 'Could not get nearby spots' });
-    }
-    res.json({"result": docs});
+            console.log('Could not get nearby spots');
+            return res.json({ message: 'Could not get nearby spots' });
+        }
+        res.json({"result": docs});
     });
 }
 
@@ -52,12 +52,61 @@ router.get('/spots/:spot', function(req, res) {
     collection.findOne({index: spot},{},function(err,docs){
         if (err) {
             console.log('Could not find spot ' + spot + ' in DB');
-        res.json({ result: 'Could not find spot ' + spot + ' in DB' });
-    } else {
+            res.json({ result: 'Could not find spot ' + spot + ' in DB' });
+        } else {
             console.log('found ' + docs.index + ' in DB');
             res.json({ "result": docs});
-    }
+        }
         //res.json(docs);
+    });
+});
+
+router.put('/spots/:spot', function(req, res) {
+    var body = req.body;
+    var spotIndex = req.params.spot;
+    var spotAddress = body.address;
+    var spotStreet = spotAddress.Street;
+    var spotCity = spotAddress.City;
+    var spotState = spotAddress.State;
+    var spotZip = spotAddress.Zip;
+
+    if (!isSpotValid(spotIndex, spotAddress, spotStreet, spotCity, spotState, spotZip)) {
+        return res.json({result: "Invalid name and/or address. Cannot update spot."});
+    }
+
+    var db = req.db;
+    var collection = db.get('spotcollection');
+    var spot = req.params.spot;
+    collection.findOne({index: spot},{},function(err,spotDetails){
+        if (err) {
+            console.log('Could not find spot [' + spot + '] to update');
+            res.json({ result: 'Could not find spot [' + spot + '] to update' });
+        } else {
+            console.log('Found [' + spotDetails.index + '] updating...');
+
+            if (body.Contacts) {
+                spotDetails.Contacts.Phone = body.Contacts.Phone;
+                spotDetails.Contacts.Facebook = body.Contacts.Facebook;
+                spotDetails.Contacts.Twitter = body.Contacts.Twitter;
+                spotDetails.Contacts.Instagram = body.Contacts.Instagram;
+                spotDetails.Contacts.Website = body.Contacts.Website;
+            }
+
+            var spotLoc = spotStreet + ", " + spotCity + ", " + spotState + ", " + spotZip;
+            geocoder.geocode(spotLoc, function(err, geoLoc) {
+                if (err) {
+                    console.log('The provided address (' + spotLoc + ') was not valid. Update failed!');
+                    res.json({ result: 'The provided address was not valid. Update failed.'});
+                } else {
+                    spotDetails.Location.coordinates = [geoLoc[0].longitude, geoLoc[0].latitude];
+                    spotDetails.address.Street = spotStreet;
+                    spotDetails.address.City = spotCity;
+                    spotDetails.address.State = spotState;
+                    spotDetails.address.Zip = spotZip;
+                    insertOrUpdateSpot(collection, spotDetails, res);
+                }
+            });
+        }
     });
 });
 
@@ -71,7 +120,7 @@ router.post('/spots', function(req, res) {
     var spotZip = spotAddress.Zip;
 
     if (!isSpotValid(spotName, spotAddress, spotStreet, spotCity, spotState, spotZip)) {
-    res.json({result: "Invalid name and/or address. Cannot create new spot."});
+        return res.json({result: "Invalid name and/or address. Cannot create new spot."});
     }
 
     var spotPhone = "";
@@ -109,7 +158,7 @@ router.post('/spots', function(req, res) {
                 "Location":{"type":"Point","coordinates":[spotLongitude,spotLatitude]},
                 "Contacts":{"Phone":spotPhone, "Facebook":spotFacebook, "Twitter":spotTwitter, "Instagram":spotInstagram, "Website":spotWebsite}
             };
-            insertSpot(collection, newSpot, res);
+            insertOrUpdateSpot(collection, newSpot, res);
         });
 
     });
@@ -122,13 +171,13 @@ function isSpotValid(spotName, spotAddress, spotStreet, spotCity, spotState, spo
     return false;
 }
 
-function insertSpot(collection, newSpot, res) {
-    collection.insert(newSpot, function(err,docs){
+function insertOrUpdateSpot(collection, newSpot, res) {
+    collection.update({index:newSpot.index}, newSpot, {upsert:true}, function(err,docs){
         if (err) {
-            console.log('Could not insert new spot [' + newSpot.name + '] to DB. Most likely because a spot with the same index (' + newSpot.index + ') already exists!');
-            res.json({ result: 'Could not insert spot [' + newSpot.name + '] with index [' + newSpot.index + '] to DB' });
+            console.log('Could not insert or update spot with index [' + newSpot.index + ']');
+            res.json({ result: 'Could not insert or update spot with index [' + newSpot.index + ']' });
         } else {
-            console.log("Inserted new spot: [" + newSpot.name + "] with index [" + newSpot.index + "]");
+            console.log("Inserted/updated spot: [" + newSpot.name + "] with index [" + newSpot.index + "]");
             res.send(newSpot);
         }
    });
