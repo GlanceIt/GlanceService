@@ -11,6 +11,7 @@ var db = monk('localhost:27017/spotDB');
 
 var ratings = require('./controllers/rating');
 var spots = require('./controllers/spot');
+var users = require('./controllers/user');
 
 var app = express();
 
@@ -31,6 +32,7 @@ app.use(function(req,res,next){
 
 app.use('/', ratings);
 app.use('/', spots);
+app.use('/', users);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
