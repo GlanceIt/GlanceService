@@ -1,12 +1,10 @@
 var express = require('express');
 var router = express.Router();
 
-router.post('/users', function(req, res) {
-    var collection = req.db.get('usercollection');    
+router.put('/users/:user', function(req, res) {
+    var collection = req.db.get('usercollection');
     var body = req.body;
-    var userId = body.UserId;
-    //Account type can be Facebook, Instagram
-    var accountType = body.AccountType;
+    var userId = req.params.user;
     var firstName = body.FirstName;
     var lastName = body.LastName;
     var email = body.Email;
@@ -15,7 +13,24 @@ router.post('/users', function(req, res) {
         return res.json({result: "Invalid user. Cannot create/update user."});
     }
 
-    newUser = body;
+    var newUser = body;
+    newUser.UserId = userId;
+    insertOrUpdateUser(collection, newUser, res);
+});
+
+router.post('/users', function(req, res) {
+    var collection = req.db.get('usercollection');
+    var body = req.body;
+    var userId = body.UserId;
+    var firstName = body.FirstName;
+    var lastName = body.LastName;
+    var email = body.Email;
+
+    if (!isUserValid(userId, firstName, lastName)) {
+        return res.json({result: "Invalid user. Cannot create/update user."});
+    }
+
+    var newUser = body;
     insertOrUpdateUser(collection, newUser, res);
 });
 
@@ -36,7 +51,7 @@ function insertOrUpdateUser(collection, newUser, res) {
             console.log("Inserted/updated user with id [" + newUser.UserId + "]");
             res.send(newUser);
         }
-   });
+    });
 }
 
 module.exports = router;
