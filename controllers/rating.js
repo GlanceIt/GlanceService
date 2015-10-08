@@ -61,16 +61,27 @@ and update the average ratings in the spots collection.
 Note: currRatings is only passed here to avoid accissing the spots collection again*/
 function updateRatingAndAvg(db, currRatings, newRatings, res) {
     var collection = db.get('ratingcollection');
-    collection.update({Spot: newRatings.Spot, User: newRatings.User}, newRatings, {upsert: true}, function(err,docs){
-        if (err) {
-           console.log(err); 
-           console.log('Could not update rating in DB.');
-            res.json({"result":"Could not update rating in DB."});
-        } else {
-            console.log("Inserted/updated ratings for spot [" + newRatings.Spot + "] by user [" + newRatings.User + "]");
-            updateSpotAvgRatings(db, currRatings, newRatings.Spot, res);
+    var userCollection = db.get('usercollection');
+
+    // return error if the user does not exist!
+    userCollection.findOne({UserId:newRatings.User},{},function(err,users){
+        if (err || !users) {
+            console.log('Could not find user [' + newRatings.User + ']. Cannot post this rating.');
+            return res.json({ result: 'Could not find user [' + newRatings.User + ']. Cannot post this rating.' });
         }
-   });
+
+        console.log('Found user [' + newRatings.User + ']. Posting the review...');
+        collection.update({Spot: newRatings.Spot, User: newRatings.User}, newRatings, {upsert: true}, function(err,docs){
+            if (err) {
+                console.log(err);
+                console.log('Could not update rating in DB.');
+                res.json({"result":"Could not update rating in DB."});
+            } else {
+                console.log("Inserted/updated ratings for spot [" + newRatings.Spot + "] by user [" + newRatings.User + "]");
+                updateSpotAvgRatings(db, currRatings, newRatings.Spot, res);
+            }
+        });
+    });
 }
 
 function updateSpotAvgRatings(db, currRatings, spot, res) {
