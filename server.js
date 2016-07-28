@@ -13,6 +13,7 @@ var ratings = require('./controllers/rating');
 var spots = require('./controllers/spot');
 var users = require('./controllers/user');
 var images = require('./controllers/image');
+var search = require('./controllers/search');
 
 var app = express();
 
@@ -35,6 +36,7 @@ app.use('/', ratings);
 app.use('/', spots);
 app.use('/', users);
 app.use('/', images);
+app.use('/', search);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
