@@ -14,11 +14,25 @@ router.post('/search', function(req, res) {
 
     var weights = req.body;
     if (weights != null) {
-        wifiWeight = weights.wifiWeight;
-        staffWeight = weights.staffWeight;
-        coffeeWeight = weights.coffeeWeight;
-        seatingWeight = weights.seatingWeight;
-        parkingWeight = weights.parkingWeight;
+	if (weights.wifiWeight) {
+            wifiWeight = weights.wifiWeight;
+        }
+
+	if (weights.staffWeight) {
+            staffWeight = weights.staffWeight;
+        }
+
+	if (weights.coffeeWeight) {
+            coffeeWeight = weights.coffeeWeight;
+        }
+
+	if (weights.seatingWeight) {
+            seatingWeight = weights.seatingWeight;
+        }
+
+	if (weights.parkingWeight) {
+            parkingWeight = weights.parkingWeight;
+        }
     }
 
     var collection = db.get('spotcollection');
@@ -47,6 +61,7 @@ router.post('/search', function(req, res) {
                 var results = [];
                 for (var i = 0; i < searchResults.length; i++) {
                     results[i] = searchResults[i].spot;
+                    //results[i].weight = searchResults[i].weight;
                 }
                 res.json(results);
             }
