@@ -5,10 +5,10 @@ var router = express.Router();
 router.put('/ratings/:spot', function(req, res) {
     var db = req.db;
     var body = req.body;
-    var user = body.User;
+    var user = body.user;
     var spotIndex = req.params.spot;
 
-    if (!body.Ratings) {
+    if (!body.ratings) {
         res.json({result: "No rating is provided."});
     }
 
@@ -23,7 +23,7 @@ router.put('/ratings/:spot', function(req, res) {
                 res.json({result: "Invalid rating. Cannot post new rating."});
             } else {
                 console.log('Found spot [' + spotIndex + '] in DB');
-                body.Spot = spotIndex;
+                body.spot = spotIndex;
                 updateRatingAndAvg(db, currRatings, body, res);
             }
         }
@@ -31,12 +31,12 @@ router.put('/ratings/:spot', function(req, res) {
 });
 
 function isRatingsValid(body) {
-    var wifiRating = body.Ratings.Wifi;
-    var staffRating = body.Ratings.Staff;
-    var coffeeRating = body.Ratings.Coffee;
-    var seatingRating = body.Ratings.Seating;
-    var parkingRating = body.Ratings.Parking;
-    var overallRating = body.Ratings.Overall;
+    var wifiRating = body.ratings.wifi;
+    var staffRating = body.ratings.staff;
+    var coffeeRating = body.ratings.coffee;
+    var seatingRating = body.ratings.seating;
+    var parkingRating = body.ratings.parking;
+    var overallRating = body.ratings.overall;
 
     if (isOneRatingValid(wifiRating) && isOneRatingValid(staffRating) && isOneRatingValid(coffeeRating) &&
         isOneRatingValid(seatingRating) && isOneRatingValid(parkingRating) && isOneRatingValid(overallRating)){
@@ -64,21 +64,21 @@ function updateRatingAndAvg(db, currRatings, newRatings, res) {
     var userCollection = db.get('usercollection');
 
     // return error if the user does not exist!
-    userCollection.findOne({UserId:newRatings.User},{},function(err,users){
+    userCollection.findOne({userId:newRatings.user},{},function(err,users){
         if (err || !users) {
-            console.log('Could not find user [' + newRatings.User + ']. Cannot post this rating.');
-            return res.json({ result: 'Could not find user [' + newRatings.User + ']. Cannot post this rating.' });
+            console.log('Could not find user [' + newRatings.user + ']. Cannot post this rating.');
+            return res.json({ result: 'Could not find user [' + newRatings.user + ']. Cannot post this rating.' });
         }
 
-        console.log('Found user [' + newRatings.User + ']. Posting the review...');
-        collection.update({Spot: newRatings.Spot, User: newRatings.User}, newRatings, {upsert: true}, function(err,docs){
+        console.log('Found user [' + newRatings.user + ']. Posting the review...');
+        collection.update({spot: newRatings.spot, user: newRatings.user}, newRatings, {upsert: true}, function(err,docs){
             if (err) {
                 console.log(err);
                 console.log('Could not update rating in DB.');
                 res.json({"result":"Could not update rating in DB."});
             } else {
-                console.log("Inserted/updated ratings for spot [" + newRatings.Spot + "] by user [" + newRatings.User + "]");
-                updateSpotAvgRatings(db, currRatings, newRatings.Spot, res);
+                console.log("Inserted/updated ratings for spot [" + newRatings.spot + "] by user [" + newRatings.user + "]");
+                updateSpotAvgRatings(db, currRatings, newRatings.spot, res);
             }
         });
     });
@@ -88,7 +88,7 @@ function updateSpotAvgRatings(db, currRatings, spot, res) {
     var collection = db.get('ratingcollection');
     collection.col.aggregate(
         [
-            {$match: {"Spot":spot}},{$group: { _id: "Spot", avgWifi: {$avg: "$Ratings.Wifi"}, countWifi: {$sum: 1}, avgStaff: {$avg: "$Ratings.Staff"}, countStaff: {$sum: 1}, avgCoffee: {$avg: "$Ratings.Coffee"}, countCoffee: {$sum: 1}, avgSeating: {$avg: "$Ratings.Seating"}, countSeating: {$sum: 1}, avgParking: {$avg: "$Ratings.Parking"}, countParking: {$sum: 1}, avgOverall: {$avg: "$Ratings.Overall"}, countOverall: {$sum: 1} }}
+            {$match: {"spot":spot}},{$group: { _id: "spot", avgWifi: {$avg: "$ratings.wifi"}, countWifi: {$sum: 1}, avgStaff: {$avg: "$ratings.staff"}, countStaff: {$sum: 1}, avgCoffee: {$avg: "$ratings.coffee"}, countCoffee: {$sum: 1}, avgSeating: {$avg: "$ratings.seating"}, countSeating: {$sum: 1}, avgParking: {$avg: "$ratings.parking"}, countParking: {$sum: 1}, avgOverall: {$avg: "$ratings.overall"}, countOverall: {$sum: 1} }}
         ],
         {}, function(err, newRatings){
             if (err) {
@@ -96,18 +96,18 @@ function updateSpotAvgRatings(db, currRatings, spot, res) {
 	        res.json({ message: 'Could not get average ratings for spot' });
 	    } else {
                 var ratings = currRatings;
-                ratings.aspects.Wifi.rating = newRatings[0].avgWifi;
-                ratings.aspects.Wifi.count = newRatings[0].countWifi;
-                ratings.aspects.Staff.rating = newRatings[0].avgStaff;
-                ratings.aspects.Staff.count = newRatings[0].countStaff;
-                ratings.aspects.Coffee.rating = newRatings[0].avgCoffee;
-                ratings.aspects.Coffee.count = newRatings[0].countCoffee;
-                ratings.aspects.Seating.rating = newRatings[0].avgSeating;
-                ratings.aspects.Seating.count = newRatings[0].countSeating;
-                ratings.aspects.Parking.rating = newRatings[0].avgParking;
-                ratings.aspects.Parking.count = newRatings[0].countParking;
-                ratings.Overall.rating = newRatings[0].avgOverall;
-                ratings.Overall.count = newRatings[0].countOverall;
+                ratings.aspects.wifi.rating = newRatings[0].avgWifi;
+                ratings.aspects.wifi.count = newRatings[0].countWifi;
+                ratings.aspects.staff.rating = newRatings[0].avgStaff;
+                ratings.aspects.staff.count = newRatings[0].countStaff;
+                ratings.aspects.coffee.rating = newRatings[0].avgCoffee;
+                ratings.aspects.coffee.count = newRatings[0].countCoffee;
+                ratings.aspects.seating.rating = newRatings[0].avgSeating;
+                ratings.aspects.seating.count = newRatings[0].countSeating;
+                ratings.aspects.parking.rating = newRatings[0].avgParking;
+                ratings.aspects.parking.count = newRatings[0].countParking;
+                ratings.overall.rating = newRatings[0].avgOverall;
+                ratings.overall.count = newRatings[0].countOverall;
 
                 collection = db.get('spotcollection');
                 collection.col.update({index:ratings.index}, ratings, function(err,docs){

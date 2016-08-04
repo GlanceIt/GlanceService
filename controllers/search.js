@@ -78,11 +78,11 @@ router.post('/search', function(req, res) {
                 spot: "$$ROOT",
                 weight: {
                     $add: [
-                        { $multiply: [ "$aspects.Wifi.rating", weights.wifi ] },
-                        { $multiply: [ "$aspects.Staff.rating", weights.staff ] },
-                        { $multiply: [ "$aspects.Coffee.rating", weights.coffee ] },
-                        { $multiply: [ "$aspects.Seating.rating", weights.seating ] },
-                        { $multiply: [ "$aspects.Parking.rating", weights.parking ] }
+                        { $multiply: [ "$aspects.wifi.rating", weights.wifi ] },
+                        { $multiply: [ "$aspects.staff.rating", weights.staff ] },
+                        { $multiply: [ "$aspects.coffee.rating", weights.coffee ] },
+                        { $multiply: [ "$aspects.seating.rating", weights.seating ] },
+                        { $multiply: [ "$aspects.parking.rating", weights.parking ] }
                     ]
                 }
             }},

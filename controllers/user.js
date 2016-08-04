@@ -5,26 +5,26 @@ router.put('/users/:user', function(req, res) {
     var collection = req.db.get('usercollection');
     var body = req.body;
     var userId = req.params.user;
-    var firstName = body.FirstName;
-    var lastName = body.LastName;
-    var email = body.Email;
+    var firstName = body.firstName;
+    var lastName = body.lastName;
+    var email = body.email;
 
     if (!isUserValid(userId, firstName, lastName)) {
         return res.json({result: "Invalid user. Cannot create/update user."});
     }
 
     var newUser = body;
-    newUser.UserId = userId;
+    newUser.userId = userId;
     insertOrUpdateUser(collection, newUser, res);
 });
 
 router.post('/users', function(req, res) {
     var collection = req.db.get('usercollection');
     var body = req.body;
-    var userId = body.UserId;
-    var firstName = body.FirstName;
-    var lastName = body.LastName;
-    var email = body.Email;
+    var userId = body.userId;
+    var firstName = body.firstName;
+    var lastName = body.lastName;
+    var email = body.email;
 
     if (!isUserValid(userId, firstName, lastName)) {
         return res.json({result: "Invalid user. Cannot create/update user."});
@@ -42,13 +42,13 @@ function isUserValid(userId, firstName, lastName) {
 }
 
 function insertOrUpdateUser(collection, newUser, res) {
-    collection.update({UserId:newUser.UserId}, newUser, {upsert:true}, function(err,docs){
+    collection.update({userId:newUser.userId}, newUser, {upsert:true}, function(err,docs){
         if (err) {
             console.log(err);
-            console.log('Could not insert or update user with id [' + newUser.UserId + ']');
-            res.json({ result: 'Could not insert or update user with id [' + newUser.UserId + ']' });
+            console.log('Could not insert or update user with id [' + newUser.userId + ']');
+            res.json({ result: 'Could not insert or update user with id [' + newUser.userId + ']' });
         } else {
-            console.log("Inserted/updated user with id [" + newUser.UserId + "]");
+            console.log("Inserted/updated user with id [" + newUser.userId + "]");
             res.send(newUser);
         }
     });

@@ -84,12 +84,12 @@ router.put('/spots/:spot', function(req, res) {
         } else {
             console.log('Found [' + spotDetails.index + '] updating...');
 
-            if (body.Contacts) {
-                spotDetails.Contacts.Phone = body.Contacts.Phone;
-                spotDetails.Contacts.Facebook = body.Contacts.Facebook;
-                spotDetails.Contacts.Twitter = body.Contacts.Twitter;
-                spotDetails.Contacts.Instagram = body.Contacts.Instagram;
-                spotDetails.Contacts.Website = body.Contacts.Website;
+            if (body.contacts) {
+                spotDetails.contacts.phone = body.contacts.phone;
+                spotDetails.contacts.facebook = body.contacts.facebook;
+                spotDetails.contacts.twitter = body.contacts.twitter;
+                spotDetails.contacts.instagram = body.contacts.instagram;
+                spotDetails.contacts.website = body.contacts.website;
             }
 
             var spotLoc = spotStreet + ", " + spotCity + ", " + spotState + ", " + spotZip;
@@ -114,10 +114,10 @@ router.post('/spots', function(req, res) {
     var body = req.body;
     var spotName = body.name;
     var spotAddress = body.address;
-    var spotStreet = spotAddress.Street;
-    var spotCity = spotAddress.City;
-    var spotState = spotAddress.State;
-    var spotZip = spotAddress.Zip;
+    var spotStreet = spotAddress.street;
+    var spotCity = spotAddress.city;
+    var spotState = spotAddress.state;
+    var spotZip = spotAddress.zip;
 
     if (!isSpotValid(spotName, spotAddress, spotStreet, spotCity, spotState, spotZip)) {
         return res.json({result: "Invalid name and/or address. Cannot create new spot."});
@@ -129,18 +129,18 @@ router.post('/spots', function(req, res) {
     var spotInstagram = "";
     var spotWebsite = "";
 
-    if (body.Contacts) {
-        spotPhone = body.Contacts.Phone;
-        spotFacebook = body.Contacts.Facebook;
-        spotTwitter = body.Contacts.Twitter;
-        spotInstagram = body.Contacts.Instagram;
-        spotWebsite = body.Contacts.Website;
+    if (body.contacts) {
+        spotPhone = body.contacts.phone;
+        spotFacebook = body.contacts.facebook;
+        spotTwitter = body.contacts.twitter;
+        spotInstagram = body.contacts.instagram;
+        spotWebsite = body.contacts.website;
     }
 
     var spotLoc = spotStreet + ", " + spotCity + ", " + spotState + ", " + spotZip;
 
     var emptyRating = {"rating":0,"count":0};
-    var spotAspects = {"Wifi": emptyRating, "Staff": emptyRating, "Coffee": emptyRating, "Seating": emptyRating, "Parking": emptyRating};
+    var spotAspects = {"wifi": emptyRating, "staff": emptyRating, "coffee": emptyRating, "seating": emptyRating, "parking": emptyRating};
 
     geocoder.geocode(spotLoc, function(err, geoLoc) {
         var spotLongitude = geoLoc[0].longitude;
@@ -152,11 +152,11 @@ router.post('/spots', function(req, res) {
             var currentCount = docs + 1;
             var spotIndex = spotIndexPrefix + currentCount;
 
-        var newSpot = {"index": spotIndex, "name": spotName, "Overall": emptyRating,
-                "aspects": spotAspects, "address": {"Street": spotStreet, "City": spotCity, "State": spotState, "Zip": spotZip},
-                "Image": "",
-                "Location":{"type":"Point","coordinates":[spotLongitude,spotLatitude]},
-                "Contacts":{"Phone":spotPhone, "Facebook":spotFacebook, "Twitter":spotTwitter, "Instagram":spotInstagram, "Website":spotWebsite}
+        var newSpot = {"index": spotIndex, "name": spotName, "overall": emptyRating,
+                "aspects": spotAspects, "address": {"street": spotStreet, "city": spotCity, "state": spotState, "zip": spotZip},
+                "image": "",
+                "location":{"type":"Point","coordinates":[spotLongitude,spotLatitude]},
+                "contacts":{"phone":spotPhone, "facebook":spotFacebook, "twitter":spotTwitter, "instagram":spotInstagram, "website":spotWebsite}
             };
             insertOrUpdateSpot(collection, newSpot, res);
         });

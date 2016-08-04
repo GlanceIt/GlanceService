@@ -8,7 +8,7 @@ router.get('/images/spot/:spot', function(req, res) {
     var collection = db.get('imagecollection');
     var spotIndex = req.params.spot;
     var tag = req.params.tag;
-    collection.find({Spot: spotIndex, Valid: true},{},function(err,docs){
+    collection.find({spot: spotIndex, valid: true},{},function(err,docs){
         if (err) {
             console.log('Could not find images for spot [' + spotIndex + ']');
             return res.json({ result: 'Could not find images for spot [' + spotIndex + ']'});
@@ -25,7 +25,7 @@ router.get('/images/spot/:spot/tag/:tag', function(req, res) {
     var collection = db.get('imagecollection');
     var spotIndex = req.params.spot;
     var tag = req.params.tag;
-    collection.find({Spot: spotIndex, Tag: tag, Valid: true},{},function(err,docs){
+    collection.find({spot: spotIndex, tag: tag, valid: true},{},function(err,docs){
         if (err) {
             console.log('Could not find images for spot [' + spotIndex + '] and tag [' + tag + ']');
             return res.json({ result: 'Could not find images for spot [' + spotIndex + '] and tag ' + tag + ']'});
