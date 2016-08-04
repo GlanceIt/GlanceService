@@ -10,19 +10,22 @@ router.post('/search', function(req, res) {
     // default number of results to 100
     var MAX_NUMBER_OF_RESULTS = 100;
     var numOfResults = MAX_NUMBER_OF_RESULTS;
+    var inputWeights = null;
 
     // Defaulting weights to 1 in case no weight is provided in the request
-    var wifiWeight = 1;
-    var staffWeight = 1;
-    var coffeeWeight = 1;
-    var seatingWeight = 1;
-    var parkingWeight = 1;
+    var weights = {
+        wifi: 1,
+        staff: 1,
+        coffee: 1,
+        seating: 1,
+        parking: 1
+    };
 
     // Default location
     var currLoc = '38 Prism Irvine CA';
 
     if (reqBody != null) {
-        weights = reqBody.weights;
+        inputWeights = reqBody.weights;
         var inputLoc = reqBody.location;
         if (inputLoc != null) {
            currLoc = inputLoc;
@@ -35,25 +38,25 @@ router.post('/search', function(req, res) {
 
     console.log('current loc: ' + currLoc);
 
-    if (weights != null) {
-	if (weights.wifiWeight) {
-            wifiWeight = weights.wifiWeight;
+    if (inputWeights != null) {
+	if (inputWeights.wifi) {
+            weights.wifi = inputWeights.wifi;
         }
 
-	if (weights.staffWeight) {
-            staffWeight = weights.staffWeight;
+	if (inputWeights.staff) {
+            weights.staff = inputWeights.staff;
         }
 
-	if (weights.coffeeWeight) {
-            coffeeWeight = weights.coffeeWeight;
+	if (inputWeights.coffee) {
+            weights.coffee = inputWeights.coffee;
         }
 
-	if (weights.seatingWeight) {
-            seatingWeight = weights.seatingWeight;
+	if (inputWeights.seating) {
+            weights.seating = inputWeights.seating;
         }
 
-	if (weights.parkingWeight) {
-            parkingWeight = weights.parkingWeight;
+	if (inputWeights.parking) {
+            weights.parking = inputWeights.parking;
         }
     }
 
@@ -75,11 +78,11 @@ router.post('/search', function(req, res) {
                 spot: "$$ROOT",
                 weight: {
                     $add: [
-                        { $multiply: [ "$aspects.Wifi.rating", wifiWeight ] },
-                        { $multiply: [ "$aspects.Staff.rating", staffWeight ] },
-                        { $multiply: [ "$aspects.Coffee.rating", coffeeWeight ] },
-                        { $multiply: [ "$aspects.Seating.rating", seatingWeight ] },
-                        { $multiply: [ "$aspects.Parking.rating", parkingWeight ] }
+                        { $multiply: [ "$aspects.Wifi.rating", weights.wifi ] },
+                        { $multiply: [ "$aspects.Staff.rating", weights.staff ] },
+                        { $multiply: [ "$aspects.Coffee.rating", weights.coffee ] },
+                        { $multiply: [ "$aspects.Seating.rating", weights.seating ] },
+                        { $multiply: [ "$aspects.Parking.rating", weights.parking ] }
                     ]
                 }
             }},
@@ -92,11 +95,16 @@ router.post('/search', function(req, res) {
                 console.log('Searching spots failed.');
                 res.json({ message: 'Searching spots failed.' });
             } else {
-                var results = [];
-                for (var i = 0; i < searchResults.length; i++) {
-                    results[i] = searchResults[i].spot;
-                    results[i].weight = searchResults[i].weight;
+                var spots = [];
+                var results = {
+                    spots: spots,
+                    weights: weights
                 }
+                for (var i = 0; i < searchResults.length; i++) {
+                    spots[i] = searchResults[i].spot;
+                    spots[i].weight = searchResults[i].weight;
+                }
+                results.spots = spots;
                 res.json(results);
             }
         }
