@@ -7,6 +7,9 @@ router.post('/search', function(req, res) {
     var db = req.db;
     var reqBody = req.body;
     var weights = null;
+    // default number of results to 100
+    var MAX_NUMBER_OF_RESULTS = 100;
+    var numOfResults = MAX_NUMBER_OF_RESULTS;
 
     // Defaulting weights to 1 in case no weight is provided in the request
     var wifiWeight = 1;
@@ -23,6 +26,10 @@ router.post('/search', function(req, res) {
         var inputLoc = reqBody.location;
         if (inputLoc != null) {
            currLoc = inputLoc;
+        }
+        var inputNumOfResults = reqBody.numOfResults;
+        if (inputNumOfResults != null && inputNumOfResults <= MAX_NUMBER_OF_RESULTS) {
+           numOfResults = reqBody.numOfResults;
         }
     }
 
@@ -76,7 +83,8 @@ router.post('/search', function(req, res) {
                     ]
                 }
             }},
-            {$sort: { "weight": -1 } }
+            {$sort: { "weight": -1 } },
+            {$limit: numOfResults}
         ],
         { allowDiskUse: true },
 	function(err, searchResults){
